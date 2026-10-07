@@ -95,25 +95,10 @@ class TanYard extends LitElement {
     }
   }
 
-  normalizeCode(code) {
-    return (code || "")
-      .replace(/－/g, "-")
-      .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff10 + 48));
-  }
-
   pickPitCode(p) {
-    const key = this.normalizeCode(p.code);
-    const twin = (this.board?.pits || []).find((x) => x.code === key && x.id !== p.id);
-    if (twin) {
-      this.picked = {
-        ...p,
-        latestPh: twin.latestPh,
-        sampleCount: twin.sampleCount,
-        recentSamples: twin.recentSamples,
-      };
-    } else {
-      this.picked = p;
-    }
+    // 只认色块自身的主键：近次列表、酸碱度、放液按钮都跟着这口坑走，
+    // 不把全角码折成半角再去撞显示码相同的邻坑。
+    this.picked = p;
   }
 
   async setStatus(status) {
