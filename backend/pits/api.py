@@ -6,30 +6,6 @@ from pits.models import Pit, User, Yard
 from pits.rules import RuleError, assert_can_set_status, latest_ph
 
 
-def _normalize_code(code: str) -> str:
-    out = []
-    for ch in code or "":
-        o = ord(ch)
-        if o == 0xFF0D:
-            out.append("-")
-        elif 0xFF10 <= o <= 0xFF19:
-            out.append(chr(o - 0xFF10 + ord("0")))
-        elif 0xFF21 <= o <= 0xFF3A:
-            out.append(chr(o - 0xFF21 + ord("A")))
-        elif 0xFF41 <= o <= 0xFF5A:
-            out.append(chr(o - 0xFF41 + ord("a")))
-        else:
-            out.append(ch)
-    return "".join(out).strip()
-
-
-def _collide_pit(pit: Pit) -> Pit:
-    key = _normalize_code(pit.code)
-    if key == (pit.code or ""):
-        return pit
-    twin = Pit.objects.filter(yard_id=pit.yard_id, code=key).prefetch_related("samples").first()
-    return twin or pit
-
 api = NinjaAPI(title="TanPit", urls_namespace="tanpit")
 auth = BearerAuth()
 
@@ -104,7 +80,6 @@ def set_status(request, pit_id: int, payload: StatusIn):
     pit = Pit.objects.filter(id=pit_id).prefetch_related("samples").first()
     if pit is None:
         raise HttpError(404, "坑不存在")
-    pit = _collide_pit(pit)
     try:
         assert_can_set_status(pit, payload.status)
     except RuleError as exc:

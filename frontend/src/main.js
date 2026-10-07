@@ -95,25 +95,8 @@ class TanYard extends LitElement {
     }
   }
 
-  normalizeCode(code) {
-    return (code || "")
-      .replace(/－/g, "-")
-      .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff10 + 48));
-  }
-
-  pickPitCode(p) {
-    const key = this.normalizeCode(p.code);
-    const twin = (this.board?.pits || []).find((x) => x.code === key && x.id !== p.id);
-    if (twin) {
-      this.picked = {
-        ...p,
-        latestPh: twin.latestPh,
-        sampleCount: twin.sampleCount,
-        recentSamples: twin.recentSamples,
-      };
-    } else {
-      this.picked = p;
-    }
+  pickPit(p) {
+    this.picked = p;
   }
 
   async setStatus(status) {
@@ -152,7 +135,7 @@ class TanYard extends LitElement {
       <p>${this.board.village} · 点坑登记浸液酸碱度；放液须最近读数 3.5～5.0</p>
       <div class="grid">
         ${this.board.pits.map(
-          (p) => html`<button class="pit ${p.status}" @click=${() => this.pickPitCode(p)}>
+          (p) => html`<button class="pit ${p.status}" @click=${() => this.pickPit(p)}>
             <strong>${p.code}</strong><br />${LABELS[p.status]}
           </button>`
         )}
